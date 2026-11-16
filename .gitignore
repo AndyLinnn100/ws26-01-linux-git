@@ -1,4 +1,4 @@
-# Compiled binaries and objects (common accidental HPC commits)
+# Compiled objects, executables, and crash dumps
 *.o
 *.out
 *.exe
@@ -7,12 +7,12 @@
 a.out
 core.*
 
-# Logs and temporary outputs
+# Generated logs and exercise results
 *.log
 sim_result.txt
 passcode.txt
 
-# Large scientific data / AI weights (keep these on the shared server, not in Git)
+# Scientific datasets, model weights, and archives
 *.hdf5
 *.h5
 *.nc
@@ -21,7 +21,7 @@ passcode.txt
 *.tar.gz
 *.zip
 
-# OS and editor junk
+# Local operating system, editor, and Python files
 .DS_Store
 .vscode/
 __pycache__/

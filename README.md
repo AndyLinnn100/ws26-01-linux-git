@@ -1,73 +1,99 @@
-# ws26-01-linux-git: Linux basics and Git
+# Week 1: Linux basics and Git
 
-- Time: 2026-11-18 (Wed) 18:30–20:00 (HKT). The room will be announced on site.
-- Organization home: [hkust-asc](https://github.com/hkust-asc)
-- Internal guides: [WSL](https://github.com/hkust-asc/.github-private/blob/main/docs/wsl-setup.md) · [SSH / VS Code](https://github.com/hkust-asc/.github-private/blob/main/docs/ssh-vscode.md) · [Git conventions](https://github.com/hkust-asc/.github-private/blob/main/docs/git-rules.md)
+**Wednesday, 2026-11-18, 18:30–20:00 (HKT)** · [ASC Team organization](https://github.com/hkust-asc)
 
-Goal: finish the quests below and open a pull request on this private repository with your profile (and any tokens from quests you completed).
+Practice navigating a Linux server, separating program output, keeping a session alive, and submitting work through Git. Server access details are still TBD; the coach will post them on the [internal member board](https://github.com/hkust-asc/.github-private#server-access).
 
-## Git conventions (required)
+Member guides: [WSL setup](https://github.com/hkust-asc/.github-private/blob/main/docs/wsl-setup.md) · [SSH and VS Code](https://github.com/hkust-asc/.github-private/blob/main/docs/ssh-vscode.md) · [Git rules](https://github.com/hkust-asc/.github-private/blob/main/docs/git-rules.md)
 
-1. Use the branch `submit/<your-github-id>` (or `fix/<your-github-id>-<short-description>` for a bug fix). Do not push to `main` directly.
-2. Put your files under `submissions/<your-github-id>/` (for example, `submissions/yourid/profile.md`). Do not edit anyone else’s folder, and do not edit the original files in `quests/`.
-3. Write commit messages that say what you did. Do not use `update`, `111`, or `asdf`.
-4. Pull request title: `[Submit] Your Name (@github-id)`. Issue title: `[Bug] filename: short description` or `[Question] description of the problem`.
+## Quest 1: Connect and explore
 
-```bash
-git clone https://github.com/hkust-asc/ws26-01-linux-git.git
-cd ws26-01-linux-git
-git checkout -b submit/<your-github-id>
-mkdir -p submissions/<your-github-id>
-```
+1. Once the coach provides the host, port, and account, connect to the training server with SSH. See the [SSH guide](https://github.com/hkust-asc/.github-private/blob/main/docs/ssh-vscode.md) for the command.
+2. Create and enter your workspace:
 
-## Quest 1: Log into the remote node and set up ranger (~20 minutes)
+   ```bash
+   mkdir -p ~/workspace
+   cd ~/workspace
+   ```
 
-SSH details are in the “Server access” section on the internal organization home page (to be filled in by the coach). After you connect:
+3. Install `ranger` in your home directory without `sudo`, and set up an alias for Bash:
 
-1. Run `pwd` to see where you are, create a `workspace` directory, and `cd` into it.
-2. Without `sudo`, install `ranger` in your home directory and add an alias:
+   ```bash
+   git clone https://github.com/ranger/ranger.git ~/.ranger
+   echo "alias ranger='python3 ~/.ranger/ranger.py'" >> ~/.bashrc
+   source ~/.bashrc
+   ```
 
-```bash
-git clone https://github.com/ranger/ranger.git ~/.ranger
-echo "alias ranger='python3 ~/.ranger/ranger.py'" >> ~/.bashrc
-source ~/.bashrc
-```
+4. Run `ranger /opt/asc_quest/` to explore the directory. Use the arrow keys to navigate and `q` to quit.
 
-3. Start `ranger`, browse `/opt/asc_quest/` with the arrow keys, then press `q` to quit.
+## Quest 2: Redirect output and use tmux
 
-## Quest 2: I/O redirection and tmux (~25 minutes)
+The coach will put `noisy_sensor.sh` and `long_sim.sh` on the server in `/opt/asc_quest/`. They are not stored in Git.
 
-1. Run `/opt/asc_quest/noisy_sensor.sh`. Run it again from `~/workspace`, sending standard output (stdout) to `passcode.txt` and standard error (stderr) to `error.log`.
-   - Check: `cat passcode.txt` should show only one clean `PASSCODE` line, with no `[ERROR]` text.
-2. `tmux` disconnect protection:
-   - Start a session named `sim` with `tmux new -s sim`.
-   - Inside it, run `/opt/asc_quest/long_sim.sh` (about 60 seconds).
-   - While it is still running, press `Ctrl+B`, release, then press `D` to detach. You may even disconnect SSH.
-   - After about a minute, reconnect, run `tmux ls`, and check the Token in `~/sim_result.txt` in your home directory.
+1. From `~/workspace`, run the sensor with standard output and standard error sent to separate files:
 
-(The coach will place these two scripts on the server at `/opt/asc_quest/`. They are not in this Git repository.)
+   ```bash
+   cd ~/workspace
+   /opt/asc_quest/noisy_sensor.sh > passcode.txt 2> error.log
+   cat passcode.txt
+   cat error.log
+   ```
 
-## Quest 3: Git branches and a pull request (~30 minutes)
+   The passcode line in `passcode.txt` should be clean, without error messages. Keep the passcode for your profile.
+2. Start a session named `sim` and run the simulation inside it:
 
-You can do this on the server, on local WSL / macOS / Linux, or in VS Code Remote-SSH.
+   ```bash
+   tmux new -s sim
+   /opt/asc_quest/long_sim.sh
+   ```
 
-1. Configure your Git identity and GitHub login ( `gh auth login` is a good option).
-2. Clone this repository and switch to your branch `submit/<your-github-id>`.
-3. In `submissions/<your-github-id>/profile.md`, include:
-   - Your name / year and major
-   - The `PASSCODE` and Token from Quest 2 (if the server is not open yet, submit the profile first and add the tokens later)
-   - One or two areas on the Map of HPC that interest you most
-4. Commit, push, and open a pull request on GitHub titled `[Submit] Your Name (@github-id)`.
+3. While it runs, press **Ctrl+B**, release both keys, then press **D** to detach. Reconnect to the server if you disconnected, and reattach:
 
-## Quest 4 (bonus): for those who finish early
+   ```bash
+   tmux attach -t sim
+   ```
 
-`quests/matmul_buggy.c` is a broken C matrix-multiplication program. It contains a bug.
+4. Once the simulation finishes, recover the Token from `~/sim_result.txt`:
 
-1. Open the file and find which line is wrong and why. You may use VS Code / Copilot, but you should understand the bug yourself.
-2. **Do not fix this file and push it to `main`.** Open an issue titled `[Bug] matmul_buggy.c: short description`, and explain what you found, which line it is on, and how you would fix it.
+   ```bash
+   cat ~/sim_result.txt
+   ```
 
-## Layout
+## Quest 3: Submit a profile
 
-- `slides/`, `demos/`: class materials (added when available)
-- `quests/`: starter files for the exercises
-- `submissions/<your-github-id>/`: your work
+You may use the server, local WSL/macOS/Linux, or VS Code Remote-SSH. If the server is not open yet, submit your profile first and add the Quest 2 results later.
+
+1. Configure your Git identity and authenticate with GitHub in the environment you choose.
+2. Clone this repository and make your submission branch. Replace `YOUR_GITHUB_ID` with your GitHub ID:
+
+   ```bash
+   git clone https://github.com/hkust-asc/ws26-01-linux-git.git
+   cd ws26-01-linux-git
+   git switch -c submit/YOUR_GITHUB_ID
+   mkdir -p submissions/YOUR_GITHUB_ID
+   ```
+
+3. Create `submissions/YOUR_GITHUB_ID/profile.md` with your name, year and major, the Quest 2 passcode and Token when available, and one or two interests from the [Map of HPC](https://github.com/hkust-asc/.github-private#map-of-hpc).
+4. Stage your profile, commit it with a descriptive message, and push your branch:
+
+   ```bash
+   git add submissions/YOUR_GITHUB_ID/profile.md
+   git commit -m "Add workshop profile"
+   git push -u origin submit/YOUR_GITHUB_ID
+   ```
+
+5. Open a pull request in this repository titled `[Submit] Your Name (@github-id)`.
+
+## Quest 4: Bonus bug report
+
+Inspect `quests/matmul_buggy.c` and identify the bug. Do not push a fix to `main`. Open an issue titled `[Bug] matmul_buggy.c: short description` explaining the problem and your proposed fix.
+
+## Working rules
+
+- Use `submit/<github-id>` for assignments and `fix/<github-id>-<short-description>` for fixes. Do not push to `main`.
+- Unless a quest requires editing a shared file, work only under `submissions/<github-id>/`; do not edit the originals in `quests/` or another person's folder.
+- Make commit messages describe the change. `update`, `111`, and `asdf` are not allowed.
+- Use `[Submit] Your Name (@github-id)` for submission PRs, and `[Bug] filename: short description` or `[Question] description of the problem` for issues.
+- Check `git status` before committing. Do not add generated artifacts, logs, datasets, or model weights.
+
+`slides/` and `demos/` hold workshop materials; `quests/` holds exercise files; `submissions/` holds individual work.
